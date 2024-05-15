@@ -22,9 +22,6 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasApiTokens;
 
-
-
-
     /**
      * The attributes that are mass assignable.
      *
@@ -70,5 +67,13 @@ class User extends Authenticatable
             get: fn(string $value) => Crypt::decryptString($value),
             set: fn(string $value) => Crypt::encryptString($value),
         );
+    }
+
+    /**
+     * Get the virtual accounts for the user.
+     */
+    public function virtualAccounts()
+    {
+        return $this->hasMany(VirtualAccount::class);
     }
 }
