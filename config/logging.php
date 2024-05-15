@@ -80,6 +80,7 @@ return [
             'emoji' => env('LOG_SLACK_EMOJI', ':boom:'),
             'level' => env('LOG_LEVEL', 'critical'),
             'replace_placeholders' => true,
+            'name' => 'making-the-internet-better',
         ],
 
         'papertrail' => [

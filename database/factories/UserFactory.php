@@ -17,6 +17,13 @@ class UserFactory extends Factory
     protected static ?string $password;
 
     /**
+     * The current email being used by the factory.
+     *
+     * @var class-string
+     */
+    protected static ?string $email;
+
+    /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
@@ -29,6 +36,9 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            // 11 digit BVN
+            'bvn' => fake()->numerify('############'),
+            'phone' => '080' . fake()->numerify('########'),
         ];
     }
 
@@ -37,7 +47,7 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
         ]);
     }
