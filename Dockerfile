@@ -18,12 +18,12 @@ RUN sh -c "wget http://getcomposer.org/composer.phar && chmod a+x composer.phar 
 RUN cd /app && \
     /usr/local/bin/composer install --no-dev
 # install npm
-RUN apk add --no-cache nodejs npm
-RUN cd /app && \
-    npm install && \
-    npm run production
-# remove node_modules
-RUN rm -rf /app/node_modules
+# RUN apk add --no-cache nodejs npm
+# RUN cd /app && \
+#     npm install && \
+#     npm run production
+# # remove node_modules
+# RUN rm -rf /app/node_modules
 
 RUN chown -R www-data: /app
 
