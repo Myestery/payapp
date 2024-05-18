@@ -5,8 +5,8 @@ namespace Tests\Feature;
 // use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\User;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Http\JsonResponse;
 
 class AuthTest extends TestCase
 {
@@ -17,18 +17,22 @@ class AuthTest extends TestCase
      */
     public function test_that_user_can_register(): void
     {
+        Queue::fake();
+
         $this->postJson('/api/register', [
-            'name' => 'Test User',
+            'first_name' => 'Test User',
+            'last_name' => 'Test User',
             'email' => $this->faker->unique()->safeEmail,
             'bvn' => '12345678901',
             'phone' => '08012345678',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Pa$$w0rd',
+            'password_confirmation' => 'Pa$$w0rd',
         ])->assertCreated();
     }
 
     public function test_that_user_can_login()
     {
+        Queue::fake();
         // Create a user for testing
         /** @var User $user */
         $user = User::factory()->create([
@@ -45,8 +49,8 @@ class AuthTest extends TestCase
         $response->assertOk();
         // Assert that the response contains the access token
         $response->assertJsonStructure([
-            'access_token',
-            'token_type',
+           "data",
+           "message"
         ]);
 
         return $response;
@@ -62,7 +66,8 @@ class AuthTest extends TestCase
         // Assert that the request returns a validation error
         $response->assertStatus(422);
         $response->assertJsonValidationErrors([
-            'name',
+            'first_name',
+            'last_name',
             'email',
             'bvn',
             'password'
@@ -71,6 +76,7 @@ class AuthTest extends TestCase
 
     public function test_that_user_cannot_register_with_existing_email(): void
     {
+        Queue::fake();
         // Create a user for testing
         /** @var User $user */
         $user = User::factory()->create();
@@ -92,6 +98,7 @@ class AuthTest extends TestCase
 
     public function test_that_user_can_logout(): void
     {
+        Queue::fake();
         // Create a user for testing
         /** @var User $user */
         $user = User::factory()->create();
@@ -112,7 +119,5 @@ class AuthTest extends TestCase
         $this->getJson('/api/user')->assertUnauthorized();
 
     }
-
-
 
 }
