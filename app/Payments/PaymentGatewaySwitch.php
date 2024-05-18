@@ -3,7 +3,6 @@
 
 namespace App\Payments;
 
-use App\Models\Shop;
 
 class PaymentGatewaySwitch
 {
@@ -14,41 +13,22 @@ class PaymentGatewaySwitch
     /**
      * @throws \Exception
      */
-    public function get(Shop $shop, bool $internationalPayment = false): PaymentGateway
+    public function get(PaymentActions $action): PaymentGateway
     {
-        // $countryCodeMap = [
-        //     'NGN' => 'NG',
-        //     'GHS' => 'GH',
-        //     'KES' => 'KE',
-        //     'UGX' => 'UG',
-        //     'ZAR' => 'ZA',
-        //     'TZS' => 'TZ',
-        //     'NG' => 'NG',
-        //     'GH' => 'GH',
-        //     'KE' => 'KE',
-        //     'UG' => 'UG',
-        //     'ZA' => 'ZA',
-        //     'TZ' => 'TZ',
-        // ];
-
-        // $countryCode = strtolower($countryCodeMap[$shop->currency]);
-
-        // $scope = $internationalPayment ? 'international' : 'local';
-
-        // $paymentGatewayId = config('payment.' . $countryCode . '.' . $scope, FlutterwaveGateway::ID);
-
-        // return $this->paymentGatewayProvider->get($paymentGatewayId);
-        return $this->paymentGatewayProvider->get(FlutterwaveGateway::ID);
-    }
-
-    public function getMonnify(): PaymentGateway
-    {
-        return $this->paymentGatewayProvider->get(MonnifyGateway::ID);
+        return match($action) {
+            PaymentActions::CREATE_VIRTUAL_ACCOUNT => $this->getPaystack(),
+            default => throw new \Exception($action . ' action not supported.')
+        };
     }
 
     public function getFlutterwave(): PaymentGateway
     {
         return $this->paymentGatewayProvider->get(FlutterwaveGateway::ID);
+    }
+
+    public function getPaystack(): PaymentGateway
+    {
+        return $this->paymentGatewayProvider->get(PaystackGateway::ID);
     }
 
 }
