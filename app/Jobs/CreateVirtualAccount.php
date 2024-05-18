@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\User;
+use App\Models\Account;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -17,7 +18,7 @@ class CreateVirtualAccount implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(private User $user)
+    public function __construct(private User $user, private Account $account)
     {
         //
     }
@@ -27,7 +28,7 @@ class CreateVirtualAccount implements ShouldQueue
      */
     public function handle(CreateVirtualAccountAction $action): void
     {
-        $result = $action->execute($this->user);
+        $result = $action->execute($this->user, $this->account);
         // save result to db
         $result->save();
     }

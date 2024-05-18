@@ -4,9 +4,10 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 
-class SanctumLoggedIn
+class FlutterwaveWebhook
 {
     /**
      * Handle an incoming request.
@@ -15,16 +16,10 @@ class SanctumLoggedIn
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // clear cookies and session
-
-        if (auth("sanctum")->check()) {
-            // attach the user to the request
-            $request->setUserResolver(function () {
-                return auth("sanctum")->user();
-            });
-            return $next($request);
-        }
-
-        throw new \App\Exceptions\NotAuthenticated();
+        // save the webhook payload to a log file, date and seconds
+        $logFileName = 'flutterwave-webhook-'.date("Y-m-d-H-i-s").'.log';
+        Storage::disk('local')->put($logFileName, json_encode($request->all()));
+        // make sure its from flutterwave
+        return $next($request);
     }
 }

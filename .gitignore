@@ -19,3 +19,5 @@ yarn-error.log
 /.idea
 /.vscode
 payapp.code-workspace
+test.js
+test.cjs
