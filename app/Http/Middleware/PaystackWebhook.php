@@ -27,12 +27,7 @@ class PaystackWebhook
             return response()->json(['message' => 'Invalid signature'], 403);
         }
         // verify IP address
-
-        $allowedIps = config('paystack.allowedIps');
-
-        if (!in_array($request->ip(), $allowedIps) && !in_array('*', $allowedIps)) {
-            return response()->json(['message' => 'Invalid IP address'], 403);
-        }
+        $this->validateIP($request);
 
         return $next($request);
     }
@@ -43,5 +38,14 @@ class PaystackWebhook
     //   try to json_encode and decode the payload cos of whitespace
         $payload = json_encode(json_decode($payload));
         return hash_hmac('sha512', $payload, $secretKey) === $paystackSignature;
+    }
+
+    private function validateIP($request)
+    {
+        $allowedIps = config('paystack.allowedIps');
+
+        if (!in_array($request->ip(), $allowedIps) && !in_array('*', $allowedIps)) {
+            return response()->json(['message' => 'Invalid IP address'], 403);
+        }
     }
 }

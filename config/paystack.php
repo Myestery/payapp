@@ -41,5 +41,5 @@ return [
      */
     'preferredBank' => env('PREFERRED_BANK', 'test-bank'),
 
-    'allowedIps' => explode(',', env('PAYSTACK_ALLOWED_IPS')),
+    'allowedIps' => explode(',', env('PAYSTACK_ALLOWED_IPS',"*")),
 ];

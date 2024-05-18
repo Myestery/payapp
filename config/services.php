@@ -40,6 +40,8 @@ return [
         'public-key' => env('RAVE_PUBLIC_KEY'),
         'secret' => env('RAVE_SECRET_KEY'),
         'subscription_plan_id' => env('RAVE_SUBSCRIPTION_PLAN_ID'),
+        'verif-hash' => env('RAVE_VERIF_HASH'),
+        'allowedIps' => explode(',', env('RAVE_ALLOWED_IPS',"*")),
     ],
 
 ];
