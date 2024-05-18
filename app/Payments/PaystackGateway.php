@@ -3,6 +3,7 @@
 
 namespace App\Payments;
 
+use App\Models\Account;
 use App\Models\Shop;
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -61,7 +62,7 @@ class PaystackGateway implements PaymentGateway
         throw new \Exception('Not yet implemented');
     }
 
-    public function createVirtualAccount(User $user): VirtualAccountCreationResult
+    public function createVirtualAccount(User $user, Account $account): VirtualAccountCreationResult
     {
         // create a customer
         $customer = $this->createCustomer($user);
@@ -69,7 +70,7 @@ class PaystackGateway implements PaymentGateway
         $dedicatedAccount = $this->createDedicatedAccount($customer);
         // return the account details
         $v_account = VirtualAccountCreationResult::fromArray([
-            'user_id' => $user->id,
+            'account_id' => $user->id,
             'bank_code' => $dedicatedAccount['bank']['id'],
             'account_name' => $dedicatedAccount['account_name'],
             'account_number' => $dedicatedAccount['account_number'],
@@ -127,7 +128,7 @@ class PaystackGateway implements PaymentGateway
 
         // check for success
         if (!$result->ok()) {
-            throw new \Exception('Failed to create dedicated account on Paystack');
+            throw new \Exception('Failed to create dedicated account on Paystack: ' + $result->body());
         }
 
         return $result->json()['data'];

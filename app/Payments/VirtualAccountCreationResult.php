@@ -26,7 +26,7 @@ class VirtualAccountCreationResult
     public function toArray(): array
     {
         return [
-            'user_id' => $this->userId,
+            'account_id' => $this->userId,
             'bank_code' => $this->bankCode,
             'account_name' => $this->accountName,
             'account_number' => $this->accountNumber,
@@ -46,7 +46,7 @@ class VirtualAccountCreationResult
     static function fromArray(array $data): VirtualAccountCreationResult
     {
         return new VirtualAccountCreationResult(
-            $data['user_id'],
+            $data['account_id'],
             $data['bank_code'],
             $data['account_name'],
             $data['account_number'],

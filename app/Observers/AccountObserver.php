@@ -3,17 +3,19 @@
 namespace App\Observers;
 
 use App\Models\User;
+use App\Models\Account;
 use App\Jobs\CreateVirtualAccount;
 
-class UserObserver
+class AccountObserver
 {
     /**
      * Handle the User "created" event.
      */
-    public function created(User $user): void
+    public function created(Account $account): void
     {
         // create virtual account
-        CreateVirtualAccount::dispatch($user);
+        $user = $account->user;
+        CreateVirtualAccount::dispatch($user, $account);
     }
 
     /**

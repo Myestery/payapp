@@ -3,7 +3,7 @@
 
 namespace App\Payments;
 
-
+use App\Models\Account;
 use Exception;
 use App\Models\User;
 use App\Payments\PaymentData;
@@ -147,7 +147,7 @@ class FlutterwaveGateway implements PaymentGateway
         return self::ID;
     }
 
-    public function createVirtualAccount(User $user): VirtualAccountCreationResult
+    public function createVirtualAccount(User $user, Account $account): VirtualAccountCreationResult
     {
         throw new Exception('createVirtualAccount not implemented for Flutterwave');
     }

@@ -3,6 +3,7 @@
 
 namespace App\Payments;
 
+use App\Models\Account;
 use Exception;
 use App\Models\User;
 use App\Payments\PaymentData;
@@ -23,5 +24,6 @@ interface PaymentGateway
 
     public function createVirtualAccount(
         User $user,
+        Account $account
     ): VirtualAccountCreationResult;
 }
