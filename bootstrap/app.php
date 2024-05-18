@@ -1,6 +1,7 @@
 <?php
 
 use App\Exceptions\NotAuthenticated;
+use App\Http\Middleware\EnsureJson;
 use Illuminate\Support\Lottery;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -14,7 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-
+        $middleware->api(prepend: [
+            EnsureJson::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->throttle(function (Throwable $e) {

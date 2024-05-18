@@ -9,6 +9,8 @@
         "laravel/framework": "^11.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
+        "predis/predis": "^2.0",
+        "spatie/laravel-queueable-action": "^2.15",
         "unicodeveloper/laravel-paystack": "^1.2"
     },
     "require-dev": {

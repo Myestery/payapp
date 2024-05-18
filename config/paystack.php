@@ -35,4 +35,9 @@ return [
      */
     'merchantEmail' => getenv('MERCHANT_EMAIL'),
 
+    /**
+     *Preferred Bank
+     *
+     */
+    'preferredBank' => env('PREFERRED_BANK', 'test-bank'),
 ];

@@ -9,28 +9,15 @@ class VirtualAccount extends Model
 {
     use HasFactory;
 
-    // $table->foreignId('user_id')->constrained()->onDelete('cascade');
-    // $table->string('account_number',10)->unique();
-    // $table->string('provider', 12);
-    // $table->string('account_name');
-    // $table->string('account_bank');
-    // $table->string('account_bank_code', 5);
-    // $table->json('provider_data')->nullable();
-    // $table->boolean('is_active')->default(true);
-    // $table->timestamp('deactivated_at')->nullable();
-    // $table->timestamp('activated_at')->nullable();
-    // $table->timestamps();
-
     protected $fillable = [
         'user_id',
-        'account_number',
-        'provider',
+        'bank_code',
         'account_name',
-        'account_bank',
-        'account_bank_code',
+        'account_number',
+        'bank_name',
+        'provider',
         'provider_data',
         'is_active',
-        'deactivated_at',
         'activated_at',
     ];
 

@@ -2,21 +2,60 @@
 
 namespace App\Payments;
 
+use App\Models\VirtualAccount;
+use Illuminate\Support\Collection;
+
 class VirtualAccountCreationResult
 {
-    public string $subAccountCode;
-    public string $accountName;
-
     /**
-     * SubaccountCreationResult constructor.
-     * @param string $subAccountCode
-     * @param string $accountName
+     * VirtualAccountCreationResult constructor.
      */
-    public function __construct(string $subAccountCode, string $accountName)
-    {
-        $this->subAccountCode = $subAccountCode;
-        $this->accountName = $accountName;
+    public function __construct(
+        public int $userId,
+        public string $bankCode,
+        public string $accountName,
+        public string $accountNumber,
+        public string $bankName,
+        public string $provider,
+        public Collection $providerData,
+        public bool $isActive,
+        public string $activatedAt
+    ) {
     }
 
+    public function toArray(): array
+    {
+        return [
+            'user_id' => $this->userId,
+            'bank_code' => $this->bankCode,
+            'account_name' => $this->accountName,
+            'account_number' => $this->accountNumber,
+            'bank_name' => $this->bankName,
+            'provider' => $this->provider,
+            'provider_data' => $this->providerData->toArray(),
+            'is_active' => $this->isActive,
+            'activated_at' => $this->activatedAt,
+        ];
+    }
+
+    public function save(): VirtualAccount
+    {
+        return VirtualAccount::create($this->toArray());
+    }
+
+    static function fromArray(array $data): VirtualAccountCreationResult
+    {
+        return new VirtualAccountCreationResult(
+            $data['user_id'],
+            $data['bank_code'],
+            $data['account_name'],
+            $data['account_number'],
+            $data['bank_name'],
+            $data['provider'],
+            collect($data['provider_data']),
+            $data['is_active'],
+            $data['activated_at'],
+        );
+    }
 
 }

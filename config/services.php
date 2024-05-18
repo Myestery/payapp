@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'flutterwave' => [
+        'url' => env('RAVE_URL', 'https://api.flutterwave.com/v3'),
+        'public-key' => env('RAVE_PUBLIC_KEY'),
+        'secret' => env('RAVE_SECRET_KEY'),
+        'subscription_plan_id' => env('RAVE_SUBSCRIPTION_PLAN_ID'),
+    ],
+
 ];
