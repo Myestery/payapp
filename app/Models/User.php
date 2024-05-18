@@ -3,12 +3,15 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\VirtualAccount;
+use App\Observers\UserObserver;
+use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Laravel\Sanctum\HasApiTokens;
 
 /* list some types for the automatic PHPDoc generator
  * @property-read string $name
@@ -18,7 +21,8 @@ use Laravel\Sanctum\HasApiTokens;
  * @property-read string $phone
  * @property-read string $remember_token
  */
-class User extends Authenticatable
+#[ObservedBy([UserObserver::class])]
+ class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasApiTokens;
 
@@ -28,7 +32,8 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'email',
         'password',
         'bvn',

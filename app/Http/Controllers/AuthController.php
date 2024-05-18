@@ -18,20 +18,18 @@ class AuthController extends Controller
     public function register(RegisterRequest $request): \Illuminate\Http\JsonResponse
     {
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'bvn' => $request->bvn,
-            'phone' => $request->phone,
-            'password' => Hash::make($request->password),
-        ]);
+        $user = User::create($request->all());
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-        ], 201);
+        return $this->respondWithData(
+            data: [
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+            ],
+            message: 'Registration successful',
+            statusCode: 201
+        );
     }
 
     public function login(LoginRequest $request): \Illuminate\Http\JsonResponse
@@ -46,10 +44,13 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-        ]);
+        return $this->respondWithData(
+            data: [
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+            ],
+            message: 'Login successful'
+        );
     }
 
     public function logout(Request $request): \Illuminate\Http\JsonResponse
