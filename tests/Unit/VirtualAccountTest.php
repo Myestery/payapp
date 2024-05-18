@@ -8,8 +8,9 @@ use Mockery;
 
 use Tests\TestCase;
 use App\Models\User;
-use Mockery\MockInterface;
+use App\Models\Account;
 // use PHPUnit\Framework\TestCase;
+use Mockery\MockInterface;
 use App\Payments\PaymentActions;
 use App\Payments\PaystackGateway;
 use App\Jobs\CreateVirtualAccount;
@@ -25,10 +26,10 @@ class VirtualAccountTest extends TestCase
 {
     use WithFaker;
 
-    public function testVirtualAccountJobIsFiredAfterSignup()
+    public function testVirtualAccountJobIsFiredAfterAccountIsCreated()
     {
         Queue::fake();
-        User::factory()->create();
+        Account::factory()->create();
         Queue::assertPushed(CreateVirtualAccount::class);
     }
 

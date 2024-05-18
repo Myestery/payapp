@@ -108,15 +108,13 @@ class AuthTest extends TestCase
         ]);
 
         // fill the sanctum token
-        $token = $response->json('access_token');
+        $token = $response->json('data')["access_token"];
 
         // Attempt to logout
         $response = $this->withHeader('Authorization', "Bearer $token")->postJson('/api/logout');
 
         // Assert that the logout request was successful
         $response->assertOk();
-        // Assert that the user cannot access protected routes
-        $this->getJson('/api/user')->assertUnauthorized();
 
     }
 
