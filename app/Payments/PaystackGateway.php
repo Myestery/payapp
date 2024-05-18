@@ -70,7 +70,7 @@ class PaystackGateway implements PaymentGateway
         $dedicatedAccount = $this->createDedicatedAccount($customer);
         // return the account details
         $v_account = VirtualAccountCreationResult::fromArray([
-            'account_id' => $user->id,
+            'account_id' => $account->id,
             'bank_code' => $dedicatedAccount['bank']['id'],
             'account_name' => $dedicatedAccount['account_name'],
             'account_number' => $dedicatedAccount['account_number'],

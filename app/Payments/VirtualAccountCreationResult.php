@@ -11,7 +11,7 @@ class VirtualAccountCreationResult
      * VirtualAccountCreationResult constructor.
      */
     public function __construct(
-        public int $userId,
+        public int $accountId,
         public string $bankCode,
         public string $accountName,
         public string $accountNumber,
@@ -26,7 +26,7 @@ class VirtualAccountCreationResult
     public function toArray(): array
     {
         return [
-            'account_id' => $this->userId,
+            'account_id' => $this->accountId,
             'bank_code' => $this->bankCode,
             'account_name' => $this->accountName,
             'account_number' => $this->accountNumber,
