@@ -79,4 +79,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
     {
         return $this->hasMany(VirtualAccount::class);
     }
+
+    public function getNameAttribute(): string
+    {
+        return "{$this->first_name} {$this->last_name}";
+    }
 }

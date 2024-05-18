@@ -42,10 +42,6 @@ class PaystackGateway implements PaymentGateway
         throw new \Exception('Not yet implemented');
     }
 
-    function getCardTransactionData(string $paymentReference): CardTransactionData
-    {
-        throw new \Exception('Not yet implemented');
-    }
 
     public function verifyWebhookPayload(string $paymentReference, string $amountPaid, string $paidOn, string $transactionReference): string
     {
@@ -132,5 +128,10 @@ class PaystackGateway implements PaymentGateway
         }
 
         return $result->json()['data'];
+    }
+
+    public function processWebhook(WebhookResource $webhookResource): WebhookResult
+    {
+        throw new Exception('processWebhook not implemented for Flutterwave');
     }
 }

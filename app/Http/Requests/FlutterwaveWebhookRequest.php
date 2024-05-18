@@ -11,7 +11,7 @@ class FlutterwaveWebhookRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,12 @@ class FlutterwaveWebhookRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            "event" => "required|string",
+            "data" => "required|array",
+            "data.id" => "required|string",
+            "data.tx_ref" => "required|string",
+            "data.flw_ref" => "required|string",
+            
         ];
     }
 }

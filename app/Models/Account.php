@@ -18,6 +18,8 @@ class Account extends Model
         'transaction_limit',
         'currency',
         'email_subscribe',
+        'account_type',
+        'name',
     ];
 
     public function user()

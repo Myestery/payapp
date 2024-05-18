@@ -17,7 +17,7 @@ class PaystackWebhook
     public function handle(Request $request, Closure $next): Response
     {
         // log the request
-        $logFileName = 'paystack-webhook-'.date("Y-m-d-H-i-s").uniqid().'.log';
+        $logFileName = 'paystack-webhook-' . date("Y-m-d-H-i-s") . uniqid() . '-' . '.log';
         Storage::disk('local')->put($logFileName, json_encode($request->all()));
         // Verify the webhook signature
         $paystackSignature = $request->header('x-paystack-signature');
@@ -35,7 +35,7 @@ class PaystackWebhook
 
     private function verifySignature($payload, $paystackSignature, $secretKey)
     {
-    //   try to json_encode and decode the payload cos of whitespace
+        // try to json_encode and decode the payload cos of whitespace
         $payload = json_encode(json_decode($payload));
         return hash_hmac('sha512', $payload, $secretKey) === $paystackSignature;
     }

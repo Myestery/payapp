@@ -28,8 +28,9 @@ class VirtualAccount extends Model
         'activated_at' => 'datetime',
     ];
 
-    public function user()
+    public function account()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Account::class);
     }
+
 }

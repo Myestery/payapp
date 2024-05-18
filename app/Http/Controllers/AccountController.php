@@ -18,6 +18,7 @@ class AccountController extends Controller
             'user_id' => $request->user()->id,
             'currency' => $request->currency,
             'email_subscribe' => $request->email_subscribe,
+            'name' => $request->user()->name
         ]);
         return $this->respondWithData($acc, 'Account created successfully', 201);
     }

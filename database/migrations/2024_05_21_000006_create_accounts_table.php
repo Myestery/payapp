@@ -1,5 +1,6 @@
 <?php
 
+use App\Payments\WalletConst;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -14,8 +15,10 @@ return new class extends Migration {
     {
         Schema::create('accounts', function (Blueprint $table) {
             $table->id();
-            $table->unsignedbigInteger('user_id')->unique();
+            $table->string('name')->nullable();
+            $table->unsignedbigInteger('user_id')->unique()->nullable();
             $table->decimal('balance', 20, 2)->default(0.00);
+            $table->string('account_type')->default(WalletConst::REGULAR);
             $table->decimal('transaction_limit', 20, 2)->default(1_000_000);
             $table->string('currency')->default('NGN');
             $table->boolean('email_subscribe')->default(true);
