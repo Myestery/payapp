@@ -17,7 +17,7 @@ class PaystackWebhook
     public function handle(Request $request, Closure $next): Response
     {
         // log the request
-        $logFileName = 'paystack-webhook-'.date("Y-m-d-H-i-s").'.log';
+        $logFileName = 'paystack-webhook-'.date("Y-m-d-H-i-s").uniqid().'.log';
         Storage::disk('local')->put($logFileName, json_encode($request->all()));
         // Verify the webhook signature
         $paystackSignature = $request->header('x-paystack-signature');

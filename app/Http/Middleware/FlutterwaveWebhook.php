@@ -17,7 +17,7 @@ class FlutterwaveWebhook
     public function handle(Request $request, Closure $next): Response
     {
         // save the webhook payload to a log file, date and seconds
-        $logFileName = 'flutterwave-webhook-'.date("Y-m-d-H-i-s").'.log';
+        $logFileName = 'flutterwave-webhook-'.date("Y-m-d-H-i-s").uniqid().'.log';
         Storage::disk('local')->put($logFileName, json_encode($request->all()));
         // make sure its from flutterwave
         if (!$this->verifyHash($request)) {
