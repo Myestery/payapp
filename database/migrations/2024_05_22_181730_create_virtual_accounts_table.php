@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('virtual_accounts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('account_id')->constrained()->onDelete('cascade');
             $table->string('account_number', 10);
             $table->string('provider', 12);
             $table->string('account_name');
@@ -28,7 +28,7 @@ return new class extends Migration
         // unique columns
         Schema::table('virtual_accounts', function (Blueprint $table) {
             $table->unique(['account_number', 'bank_code']);
-            $table->unique(['user_id', 'provider']);
+            $table->unique(['account_id', 'provider']);
         });
     }
 
