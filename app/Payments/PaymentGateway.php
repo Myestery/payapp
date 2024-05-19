@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Account;
 use App\Payments\BankAccount;
 use App\Payments\PaymentData;
+use App\Payments\WithdrawalResult;
 
 interface PaymentGateway
 {
@@ -29,5 +30,12 @@ interface PaymentGateway
         User $user,
         Account $account
     ): VirtualAccountCreationResult;
+
+    public function createWithdrawal(
+        string $bankCode,
+        string $accountNumber,
+        int $amount,
+        string $reference
+    ): WithdrawalResult;
 
 }

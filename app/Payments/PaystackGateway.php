@@ -18,6 +18,7 @@ use App\Payments\WebhookResult;
 use App\Models\WalletTransaction;
 use App\Payments\TransactionData;
 use App\Payments\WebhookResource;
+use App\Payments\WithdrawalResult;
 use Illuminate\Support\Collection;
 use App\Payments\TransactionStatus;
 use Illuminate\Support\Facades\Http;
@@ -311,5 +312,29 @@ class PaystackGateway implements PaymentGateway
         );
     }
 
+    public function createWithdrawal(string $bankCode, string $accountNumber, int $amount, string $ref): WithdrawalResult
+    {
+        $data = [
+            'account_number' => $accountNumber,
+            'bank_code' => $bankCode,
+            'amount' => $amount * 100,
+            'currency' => 'NGN',
+            'reference' => $ref,
+        ];
 
+        $response = Http::withToken(config('paystack.secretKey'))
+            ->post('https://api.paystack.co/transfer', $data);
+
+        if ($response->failed()) {
+            throw new Exception('Failed to create withdrawal on Paystack: ' . $response->body());
+        }
+
+        $data = $response->json()['data'];
+
+        return new WithdrawalResult(
+            status: $response->json()['status'],
+            providerId: $response->json()['id'],
+            message: $response->json()['message'],
+        );
+    }
 }

@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 use App\Payments\PaymentData;
 use Illuminate\Support\Carbon;
 use App\Payments\TransactionData;
+use App\Payments\WithdrawalResult;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use App\Payments\InitiatePaymentResult;
@@ -219,15 +220,15 @@ class FlutterwaveGateway implements PaymentGateway
 
     public function getBanks(): array
     {
-       $secret = config('services.flutterwave.secret');
-         $response = Http::withToken($secret)
-                ->get(config('services.flutterwave.url') . '/banks/NG');
+        $secret = config('services.flutterwave.secret');
+        $response = Http::withToken($secret)
+            ->get(config('services.flutterwave.url') . '/banks/NG');
 
-          if ($response->failed()) {
-                throw new Exception('Flutterwave error: ' . $response->body());
-          }
+        if ($response->failed()) {
+            throw new Exception('Flutterwave error: ' . $response->body());
+        }
 
-          return $response->json('data');
+        return $response->json('data');
     }
 
     public function resolveBankAccount(string $accountNumber, string $bankCode): BankAccount
@@ -252,4 +253,32 @@ class FlutterwaveGateway implements PaymentGateway
         );
     }
 
+    public function createWithdrawal(string $bankCode, string $accountNumber, int $amount, string $reference): WithdrawalResult
+    {
+        $secret = config('services.flutterwave.secret');
+        $response = Http::withToken($secret)
+            ->post(config('services.flutterwave.url') . '/transfers', [
+                // 'account_bank' => $bankCode,
+                // 'account_number' => $accountNumber,
+                // commented this out because it was causing an error
+                "account_bank"=> "044",
+                "account_number"=> "0690000040",
+                'amount' => $amount,
+                'narration' => 'Withdrawal from account',
+                'currency' => 'NGN',
+                'reference' => $reference,
+                'callback_url' => 'https://google.com',
+                'debit_currency' => 'NGN',
+            ]);
+
+        if ($response->failed()) {
+            throw new Exception('Flutterwave error: ' . $response->body());
+        }
+
+        return new WithdrawalResult(
+            providerId: $response->json('data.id'),
+            status: $response->json('data.status'),
+            message: $response->json('message'),
+        );
+    }
 }

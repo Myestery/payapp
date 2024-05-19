@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Wallet\WalletConst;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Payments\PaymentData;
 use App\Payments\PaymentActions;
+use Illuminate\Support\Facades\DB;
 use App\Payments\PaymentGatewaySwitch;
 use App\Payments\PaymentGatewayProvider;
 
@@ -66,30 +68,91 @@ class AccountController extends Controller
         }
     }
 
-    public function withdraw(Request $request): \Illuminate\Http\JsonResponse
+    public function withdraw(Request $request, PaymentGatewaySwitch $switch): \Illuminate\Http\JsonResponse
     {
         $request->validate([
-            'amount' => 'required|numeric|min:1000',
+            'amount' => 'required|numeric|min:100',
             'account_number' => 'required|string',
             'bank_code' => 'required|string',
         ]);
 
         $account = $request->user()->account;
-        $provider = PaymentGatewayProvider::getProvider($account->currency);
-        $link = $provider->initiatePayment(
-            new PaymentData(
-                customerName: $account->name,
-                currency: "NGN",
-                customerEmail: $request->user()->email,
-                referenceCode: Str::uuid(),
-                redirectUrl: "https://google.com",
-                totalAmount: $request->amount,
-                customerPhone: $request->user()->phone,
-                paymentDescription: 'Withdraw from account',
-                method: 'bank-transfer'
-            )
-        );
-        return $this->respondWithData($link, 'Withdrawal initiated');
+        if ($account->balance < $request->amount) {
+            return $this->respondWithError("Insufficient balance", 400);
+        }
+        //    make sure the account exists
+        $wdlProvider = $switch->get(PaymentActions::CREATE_WITHDRAWAL);
+        $resolver = $switch->get(PaymentActions::RESOLVE_BANK_ACCOUNT);
+        try {
+            $bank = $resolver->resolveBankAccount($request->account_number, $request->bank_code);
+        } catch (\Throwable $th) {
+            return $this->respondWithError("Could not resolve Account details", 400);
+        }
+        $ref = Str::uuid();
+
+
+        $exception = DB::transaction(function () use ($account, $request, $wdlProvider, $bank, $ref) {
+
+            // create a ledger and apply debit
+            /** @var \App\Wallet\WalletService */
+            $walletService = app()->make(\App\Wallet\WalletService::class);
+
+            $gl = $wdlProvider->getGL();
+            // $txReference = $transferResponse["data"]["nip_transaction_reference"];
+
+            $ledgers = [
+                new \App\Wallet\Ledger(
+                    action: WalletConst::DEBIT,
+                    account_id: $account->id,
+                    amount: $request->amount,
+                    narration: "PAYOUT/" . $ref,
+                    category: "PAYOUT",
+                ),
+                new \App\Wallet\Ledger(
+                    action: WalletConst::CREDIT,
+                    account_id: $gl->id,
+                    amount: $request->amount,
+                    narration: "PAYOUT/" . $ref,
+                    category: "PAYOUT",
+                ),
+            ];
+
+            $res = $walletService->post(
+                reference: $ref,
+                total_amount: $request->amount,
+                ledgers: $ledgers,
+                provider: $wdlProvider->getId(),
+            );
+
+            if (!$res->isSuccessful()) {
+                throw new \Exception("An error occurred while processing your request, please try again later");
+            }
+
+            \App\Models\Withdrawal::create([
+                'account_id' => $account->id,
+                'bank_name' => $bank->bankName,
+                'account_name' => $bank->accountName,
+                'account_number' => $bank->accountNumber,
+                'bank_code' => $bank->bankCode,
+                'amount' => $request->amount,
+                'provider' => $wdlProvider->getId(),
+                'status' => "pending",
+                'reference' => "PAYOUT/" . $ref,
+                'session_id' => null,
+                'wallet_debited' => true,
+                'value_given' => false,
+                'response_code' => null,
+                'response_message' => null,
+            ]);
+        });
+
+        if ($exception) {
+            throw new \Exception(
+                "An error occurred while processing your request, please try again later"
+            );
+        }
+
+        return $this->respondWithData([], 'Withdrawal request successful');
     }
 
     public function getBanks(PaymentGatewaySwitch $switch): \Illuminate\Http\JsonResponse

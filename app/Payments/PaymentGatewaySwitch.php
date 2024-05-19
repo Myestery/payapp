@@ -20,6 +20,7 @@ class PaymentGatewaySwitch
             PaymentActions::GET_CARD_PAYMENT_LINK => $this->getFlutterwave(),
             PaymentActions::GET_BANKS => $this->getPaystack(),
             PaymentActions::RESOLVE_BANK_ACCOUNT => $this->getPaystack(),
+            PaymentActions::CREATE_WITHDRAWAL => $this->getFlutterwave(),
             default => throw new \Exception($action . ' action not supported.')
         };
     }
