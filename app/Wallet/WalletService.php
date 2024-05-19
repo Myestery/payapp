@@ -2,7 +2,9 @@
 
 namespace App\Wallet;
 
+use App\Models\Account;
 use App\Wallet\WalletConst;
+use App\Models\WalletHistory;
 use App\Wallet\WalletResponse;
 use App\Models\WalletTransaction;
 use Illuminate\Support\Facades\DB;

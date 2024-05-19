@@ -181,7 +181,7 @@ class FlutterwaveGateway implements PaymentGateway
         $ref = Str::uuid();
         $amount = $tx->amountPaid;
         $narration = "PAYIN/" . $ref . " on " . $tx->paidOn->format('Y-m-d');
-        $category = Str::upper(Str::slug($tx->paymentMethod . " PAYIN", "_"));
+        $category = Str::upper(Str::slug($tx->paymentMethod->value . " PAYIN", "_"));
 
         $ledgers = [
             new Ledger(

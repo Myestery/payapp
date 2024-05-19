@@ -21,31 +21,31 @@ class AccountObserver
     /**
      * Handle the User "updated" event.
      */
-    public function updated(User $user): void
+    public function updated(Account $account): void
     {
         //
     }
 
     /**
-     * Handle the User "deleted" event.
+     * Handle the Account "deleted" event.
      */
-    public function deleted(User $user): void
+    public function deleted(Account $account): void
     {
         //
     }
 
     /**
-     * Handle the User "restored" event.
+     * Handle the Account "restored" event.
      */
-    public function restored(User $user): void
+    public function restored(Account $account): void
     {
         //
     }
 
     /**
-     * Handle the User "force deleted" event.
+     * Handle the Account "force deleted" event.
      */
-    public function forceDeleted(User $user): void
+    public function forceDeleted(Account $account): void
     {
         //
     }

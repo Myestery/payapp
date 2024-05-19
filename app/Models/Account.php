@@ -22,8 +22,20 @@ class Account extends Model
         'name',
     ];
 
+    protected $with = ['virtualAccount'];
+
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function virtualAccount()
+    {
+        return $this->hasOne(VirtualAccount::class);
+    }
+
+    public function getAccountType()
+    {
+        return $this->account_type;
     }
 }

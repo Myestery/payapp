@@ -12,11 +12,11 @@ class WalletResponse
     }
 
     public function isSuccessful(){
-        return ($this->status == GeneralConst::SUCCESSFUL) ? true : false;
+        return ($this->status == WalletConst::SUCCESSFUL) ? true : false;
     }
 
     public function isFailed(){
-        return ($this->status != GeneralConst::SUCCESSFUL) ? true : false;
+        return ($this->status != WalletConst::SUCCESSFUL) ? true : false;
     }
 
     public function getMessage()

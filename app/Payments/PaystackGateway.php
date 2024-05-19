@@ -3,18 +3,27 @@
 
 namespace App\Payments;
 
+use Exception;
 use App\Models\Shop;
 use App\Models\User;
+use App\Wallet\Ledger;
 use App\Models\Account;
+use App\Wallet\WalletConst;
 use Illuminate\Support\Str;
 use App\Payments\PaymentData;
+use App\Wallet\WalletService;
+use Illuminate\Support\Carbon;
+use App\Payments\PaymentMethod;
 use App\Payments\WebhookResult;
+use App\Models\WalletTransaction;
 use App\Payments\TransactionData;
 use App\Payments\WebhookResource;
 use Illuminate\Support\Collection;
+use App\Payments\TransactionStatus;
 use Illuminate\Support\Facades\Http;
 use App\Payments\InitiatePaymentResult;
 use Unicodeveloper\Paystack\Facades\Paystack;
+use App\Payments\VirtualAccountCreationResult;
 
 class PaystackGateway implements PaymentGateway
 {
@@ -25,6 +34,11 @@ class PaystackGateway implements PaymentGateway
      */
     public function __construct()
     {
+    }
+
+    public function getGL(): Account
+    {
+        return Account::where('name', 'PAYSTACK GL')->first();
     }
 
     public function initiatePayment(User $user, PaymentData $paymentData): InitiatePaymentResult
@@ -226,7 +240,7 @@ class PaystackGateway implements PaymentGateway
         $ref = Str::uuid();
         $amount = $tx->amountPaid;
         $narration = "PAYIN/" . $ref . " on " . $tx->paidOn->format('Y-m-d');
-        $category = Str::upper(Str::slug($tx->paymentMethod . " PAYIN", "_"));
+        $category = Str::upper(Str::slug($tx->paymentMethod->value . " PAYIN", "_"));
 
         $ledgers = [
             new Ledger(
