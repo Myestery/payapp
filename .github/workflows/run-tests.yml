@@ -1,7 +1,7 @@
 name: Seed Heroku Databases
 
 on:
-  worflow-dispatch
+  workflow_dispatch:
 
 jobs:
   run-tests:
