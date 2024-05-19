@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Models\Account;
 use App\Models\VirtualAccount;
 use App\Payments\PaymentMethod;
-use SebastianBergmann\Template\Exception;
 
 class TransactionData
 {
@@ -67,7 +66,7 @@ class TransactionData
         }
 
         if (!$account) {
-            throw new Exception('Account not found');
+            throw new \Exception('Account not found');
         }
 
         return $account;
