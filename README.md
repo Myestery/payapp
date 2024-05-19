@@ -128,7 +128,3 @@ The diagram illustrates the wallet component and its integration with the paymen
 
 Contributions are welcome! Please fork the repository and create a pull request with your changes. Ensure your code is well-documented and includes tests for new features.
 
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-```
