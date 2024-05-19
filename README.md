@@ -37,8 +37,8 @@ Welcome to the Wallet Management API. This application, built on Laravel, provid
 
 1. **Clone the repository:**
     ```sh
-    git clone https://github.com/your-username/wallet-management-api.git
-    cd wallet-management-api
+    git clone https://github.com/myestery/payapp.git
+    cd payapp
     ```
 
 2. **Install dependencies:**
@@ -82,6 +82,22 @@ Sample environment variables are provided in the `.env.example` file. You can co
 cp .env.example .env
 ```
 
+## Wallet Implementation
+This is done using the accounts table and the wallet service in [app/Wallet/WalletService.php](app/Services/WalletService.php). The wallet service provides methods for creating wallets, depositing and withdrawing funds, checking balances, and transferring funds between wallets.
+
+### Concept: Ledgers
+A Ledger holds an array of accounts, actions and amounts. It is used to track the movement of funds between accounts. The Ledger class is defined in [app/Wallet/Ledger.php](app/Wallet/Ledger.php).
+
+### How Debits And Credits Are Handled
+A Ledger is created holding accounts to be credited and debited, along with the amounts to be transferred. The Ledger is then processed by the WalletService, which updates the account balances accordingly.
+
+### Account types
+The account types are defined in the [app/Models/Account.php](app/Models/Account.php) file. The account types are:
+- `REGULAR` - A regular account that can be used for transactions.
+- `GL` - A general ledger account that is used for tracking system-wide transactions.
+
+GL accounts are not locked during transactions, however they are meant to be reconciled by [app/Console/Commands/RunGLEOD.php](app/Console/Commands/RunGLEOD.php) which runs the General Ledger End of Day process.
+
 ## API Documentation
 
 API documentation and samples can be seen [here](https://documenter.getpostman.com/view/10807467/2sA3QmDEVB#a5f5fbf0-b694-4e96-9e5c-ae3181c14c5a).
@@ -104,7 +120,7 @@ https://payappp-a90e537ad231.herokuapp.com/
 
 ## Architecture
 
-![Architecture Diagram](path/to/architecture-diagram.png)
+![Architecture Diagram](/architecture-diagram.png)
 
 The diagram illustrates the wallet component and its integration with the payment service. It shows the flow of funds between wallets and the interaction with Paystack and Flutterwave for transaction processing.
 
