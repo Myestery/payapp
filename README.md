@@ -8,11 +8,12 @@ Welcome to the Wallet Management API. This application, built on Laravel, provid
 2. [Requirements](#requirements)
 3. [Installation](#installation)
 4. [Running the Application](#running-the-application)
-5. [API Documentation](#api-documentation)
-6. [Testing](#testing)
-7. [Architecture](#architecture)
-8. [Contributing](#contributing)
-9. [License](#license)
+5. [Wallet Implementation](#wallet-implementation)
+6. [API Documentation](#api-documentation)
+7. [Testing](#testing)
+8. [Architecture](#architecture)
+9. [Contributing](#contributing)
+10. [License](#license)
 
 ## Features
 
