@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('histories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('account_id')->nullable()->constrained('accounts');
+            $table->foreignId('account_id')->nullable()->constrained('accounts')->onDelete('cascade');
             $table->string('reference')->nullable();
             $table->string('type')->nullable();
             $table->string('category')->nullable();

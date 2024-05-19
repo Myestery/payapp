@@ -36,8 +36,8 @@ Route::group(['middleware' => SanctumLoggedIn::class], function () {
         ->middleware(RequiresOTP::class);
     Route::post('/account/transfer', [AccountController::class, 'transfer'])
         ->middleware(HasAccount::class)
-        ->middleware(TransactionLimitChecker::class);
-        // ->middleware(RequiresOTP::class);
+        ->middleware(TransactionLimitChecker::class)
+        ->middleware(RequiresOTP::class);
     Route::get('/account/history', [AccountController::class, 'history'])->middleware(HasAccount::class);
 
     Route::get('otp', [AuthController::class, 'otp']);
