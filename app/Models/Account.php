@@ -38,4 +38,10 @@ class Account extends Model
     {
         return $this->account_type;
     }
+
+    public function histories()
+    {
+        // order by latest
+        return $this->hasMany(WalletHistory::class)->latest();
+    }
 }

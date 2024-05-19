@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Account;
 use App\Wallet\WalletConst;
 use Illuminate\Support\Str;
@@ -176,5 +177,76 @@ class AccountController extends Controller
             return $this->respondWithError("Could not resolve Account details", 400);
         }
         return $this->respondWithData($bank, 'Bank resolved successfully');
+    }
+
+    public function transfer(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:100',
+            'email' => 'required|exists:users,email',
+        ]);
+
+        $account = $request->user()->account;
+        if ($account->balance < $request->amount) {
+            return $this->respondWithError("Insufficient balance", 400);
+        }
+        $recAccount = User::where('email', $request->email)->first()->account;
+        if (!$recAccount) {
+            return $this->respondWithError("Recipient account not found", 400);
+        }
+
+        $ref = Str::uuid();
+        $exception = DB::transaction(function () use ($account, $request, $ref, $recAccount) {
+            // create a ledger and apply debit
+            /** @var \App\Wallet\WalletService */
+            $walletService = app()->make(\App\Wallet\WalletService::class);
+
+            $ledgers = [
+                new \App\Wallet\Ledger(
+                    action: WalletConst::DEBIT,
+                    account_id: $account->id,
+                    amount: $request->amount,
+                    narration: "TRANSFER/" . $ref,
+                    category: "TRANSFER",
+                ),
+                new \App\Wallet\Ledger(
+                    action: WalletConst::CREDIT,
+                    account_id: $recAccount->id,
+                    amount: $request->amount,
+                    narration: "TRANSFER/" . $ref,
+                    category: "TRANSFER",
+                ),
+            ];
+
+            $res = $walletService->post(
+                reference: $ref,
+                total_amount: $request->amount,
+                ledgers: $ledgers,
+                provider: "internal",
+            );
+
+            if (!$res->isSuccessful()) {
+                throw new \Exception("An error occurred while processing your request, please try again later");
+            }
+
+            if (!$res->isSuccessful()) {
+                throw new \Exception("An error occurred while processing your request, please try again later");
+            }
+        });
+
+        if ($exception) {
+            throw new \Exception(
+                "An error occurred while processing your request, please try again later"
+            );
+        }
+
+        return $this->respondWithData([], 'Transfer successful');
+    }
+
+    public function history(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $account = $request->user()->account;
+        $history = $account->histories;
+        return $this->respondWithData($history, 'Transaction history retrieved successfully');
     }
 }

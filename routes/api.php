@@ -28,6 +28,8 @@ Route::group(['middleware' => SanctumLoggedIn::class], function () {
     Route::get('/account', [AccountController::class, 'index']);
     Route::post('/account/deposit', [AccountController::class, 'deposit']);
     Route::post('/account/withdraw', [AccountController::class, 'withdraw']);
+    Route::post('/account/transfer', [AccountController::class, 'transfer']);
+    Route::get('/account/history', [AccountController::class, 'history']);
 
     // BANK ACCOUNT ROUTES
     Route::get('/bank', [AccountController::class, 'getBanks']);
