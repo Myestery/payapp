@@ -18,12 +18,11 @@ interface PaymentGateway
 
     public function getSettlementData(string $paymentReference): TransactionSettlementData;
 
-    public function verifyWebhookPayload(string $paymentReference, string $amountPaid, string $paidOn, string $transactionReference): string;
-
     public function processWebhook(WebhookResource $webhookResource): WebhookResult;
 
     public function createVirtualAccount(
         User $user,
         Account $account
     ): VirtualAccountCreationResult;
+
 }

@@ -89,6 +89,7 @@ class FlutterwaveGateway implements PaymentGateway
             paidOn: Carbon::parse($data['created_at']),
             customerEmail: $data['customer']['email'],
             destinationAccount: $data['account_number'] ?? null,
+            fee: $data['amount'] - $data['amount_settled'],
         );
     }
 
@@ -114,11 +115,6 @@ class FlutterwaveGateway implements PaymentGateway
         throw new Exception('getSettlementData not implemented for Flutterwave');
     }
 
-    public function verifyWebhookPayload(string $paymentReference, string $amountPaid, string $paidOn, string $transactionReference): string
-    {
-        return '';
-    }
-
     public function getId(): string
     {
         return self::ID;
@@ -131,7 +127,6 @@ class FlutterwaveGateway implements PaymentGateway
 
     public function processWebhook(WebhookResource $webhookResource): WebhookResult
     {
-        // queue this job
         $tx = $this->verifyTransaction($webhookResource);
         // check if we have processed this transaction before
         $haveProcessed = $this->checkIfTransactionIsInDatabase($tx);
@@ -145,7 +140,7 @@ class FlutterwaveGateway implements PaymentGateway
             );
         }
 
-        $account = $this->getAccountFromTx($tx);
+        $account = $tx->getAccountFromTx();
 
         // if we have not, process the transaction
         return $this->processTransaction($tx, $account);
@@ -183,8 +178,9 @@ class FlutterwaveGateway implements PaymentGateway
         $walletService = app()->make(\App\Wallet\WalletService::class);
 
         $gl = $this->getGL();
+        $ref = Str::uuid();
         $amount = $tx->amountPaid;
-        $narration = "PAYIN/" . $tx->internalTxId . " on " . $tx->paidOn->format('Y-m-d');
+        $narration = "PAYIN/" . $ref . " on " . $tx->paidOn->format('Y-m-d');
         $category = Str::upper(Str::slug($tx->paymentMethod . " PAYIN", "_"));
 
         $ledgers = [
@@ -205,7 +201,7 @@ class FlutterwaveGateway implements PaymentGateway
         ];
 
         $result = $walletService->post(
-            reference: $tx->internalTxId,
+            reference: $ref,
             total_amount: $amount,
             ledgers: $ledgers,
             provider_reference: $tx->externalTxId,
@@ -227,21 +223,4 @@ class FlutterwaveGateway implements PaymentGateway
         }
     }
 
-    private function getAccountFromTx(TransactionData $tx): Account
-    {
-        // for card payments, we can use the email to get the account
-        if ($tx->paymentMethod === PaymentMethod::CARD) {
-            $account = Account::where('email', $tx->customerEmail)->first();
-        } else {
-            // for bank transfers,
-            $vAccount = \App\Models\VirtualAccount::where('account_number', $tx->destinationAccount)->first();
-            $account = $vAccount->account;
-        }
-
-        if (!$account) {
-            throw new Exception('Account not found');
-        }
-
-        return $account;
-    }
 }

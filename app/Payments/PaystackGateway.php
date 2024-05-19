@@ -3,11 +3,17 @@
 
 namespace App\Payments;
 
-use App\Models\Account;
 use App\Models\Shop;
 use App\Models\User;
+use App\Models\Account;
+use Illuminate\Support\Str;
+use App\Payments\PaymentData;
+use App\Payments\WebhookResult;
+use App\Payments\TransactionData;
+use App\Payments\WebhookResource;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
+use App\Payments\InitiatePaymentResult;
 use Unicodeveloper\Paystack\Facades\Paystack;
 
 class PaystackGateway implements PaymentGateway
@@ -37,16 +43,51 @@ class PaystackGateway implements PaymentGateway
         return new InitiatePaymentResult($result->url);
     }
 
-    function getTransactionData(string $paymentReference): TransactionData
+    public function getTransactionData(string $paymentReference): TransactionData
     {
-        throw new \Exception('Not yet implemented');
+        $URL = "https://api.paystack.co/transaction/verify/" . $paymentReference;
+
+        $responseBody = Http::withToken(config("paystack.secretKey"))
+            ->get($URL)->json();
+
+        return $this->adaptTransactionData($responseBody);
     }
 
-
-    public function verifyWebhookPayload(string $paymentReference, string $amountPaid, string $paidOn, string $transactionReference): string
+    private function adaptTransactionData($tx): TransactionData
     {
-        throw new \Exception('Not yet implemented');
+        $data = $tx['data'];
+        return new TransactionData(
+            amountPaid: $data['amount'] / 100,
+            settlementAmount: $data['amount'] / 100,
+            paymentMethod: $this->adaptPaymentMethod($data['channel']),
+            status: $this->adaptStatus($data['status']),
+            internalTxId: $data['reference'] ?? null,
+            externalTxId: $data['id'] ?? null,
+            paidOn: Carbon::parse($data['createdAt']),
+            customerEmail: $data['customer']['email'],
+            destinationAccount: $data['metadata']['receiver_account_number'] ?? null,
+            fee: $data['fees'] / 100,
+        );
     }
+
+    private function adaptPaymentMethod($method): PaymentMethod|string
+    {
+        return match ($method) {
+            'card' => PaymentMethod::CARD,
+            'dedicated_nuban' => PaymentMethod::BANK_TRANSFER,
+            default => $method,
+        };
+    }
+
+    private function adaptStatus($status): TransactionStatus
+    {
+        return match ($status) {
+            'success' => TransactionStatus::PAID,
+            'pending' => TransactionStatus::PENDING,
+            default => TransactionStatus::FAILED,
+        };
+    }
+
 
     public function getId(): string
     {
@@ -81,7 +122,6 @@ class PaystackGateway implements PaymentGateway
         ]);
 
         return $v_account;
-
     }
 
     /**
@@ -132,6 +172,101 @@ class PaystackGateway implements PaymentGateway
 
     public function processWebhook(WebhookResource $webhookResource): WebhookResult
     {
-        throw new Exception('processWebhook not implemented for Flutterwave');
+        $tx = $this->verifyTransaction($webhookResource);
+        // check if we have processed this transaction before
+        $haveProcessed = $this->checkIfTransactionIsInDatabase($tx);
+        // if we have, return
+
+        if ($haveProcessed) {
+            return new WebhookResult(
+                account_id: "",
+                amount: $tx->amountPaid,
+                successful: false,
+            );
+        }
+
+        $account = $tx->getAccountFromTx();
+
+        // if we have not, process the transaction
+        return $this->processTransaction($tx, $account);
     }
+
+    private function verifyTransaction(WebhookResource $webhookResource): TransactionData
+    {
+        $tx = $this->getTransactionData($webhookResource->data['reference']);
+
+        if ($tx->status !== TransactionStatus::PAID) {
+            throw new Exception('Transaction not successful');
+        }
+
+        return $tx;
+    }
+
+    private function checkIfTransactionIsInDatabase(TransactionData $tx): bool
+    {
+        $transaction = \App\Models\WalletTransaction::where([
+            ['provider_reference', $tx->externalTxId],
+            ['provider', $this->getId()],
+            ['status', '!=', WalletConst::PENDING],
+        ])->first();
+
+        if ($transaction) {
+            return true;
+        }
+        return false;
+    }
+
+    private function processTransaction(TransactionData $tx, Account $account): WebhookResult
+    {
+        //  create a ledger and apply credit
+        /** @var \App\Wallet\WalletService */
+        $walletService = app()->make(\App\Wallet\WalletService::class);
+
+        $gl = $this->getGL();
+        $ref = Str::uuid();
+        $amount = $tx->amountPaid;
+        $narration = "PAYIN/" . $ref . " on " . $tx->paidOn->format('Y-m-d');
+        $category = Str::upper(Str::slug($tx->paymentMethod . " PAYIN", "_"));
+
+        $ledgers = [
+            new Ledger(
+                action: WalletConst::CREDIT,
+                account_id: $account->id,
+                amount: $amount,
+                narration: $narration,
+                category: $category,
+            ),
+            new Ledger(
+                action: WalletConst::DEBIT,
+                account_id: $gl->id,
+                amount: $tx->amountPaid,
+                narration: $narration,
+                category: $category,
+            ),
+        ];
+
+        $result = $walletService->post(
+            reference: $ref,
+            total_amount: $amount,
+            ledgers: $ledgers,
+            provider_reference: $tx->externalTxId,
+            provider: $this->getId(),
+        );
+
+        if ($result->isSuccessful()) {
+            return new WebhookResult(
+                account_id: $account->account_id,
+                amount: $tx->amountPaid,
+                successful: true,
+            );
+        } else {
+            return new WebhookResult(
+                account_id: $account->account_id,
+                amount: $tx->amountPaid,
+                successful: false,
+            );
+        }
+    }
+
+
 }
