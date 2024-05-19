@@ -83,7 +83,7 @@ cp .env.example .env
 ```
 
 ## Wallet Implementation
-This is done using the accounts table and the wallet service in [app/Wallet/WalletService.php](app/Services/WalletService.php). The wallet service provides methods for creating wallets, depositing and withdrawing funds, checking balances, and transferring funds between wallets.
+This is done using the accounts table and the wallet service in [app/Wallet/WalletService.php](app/Wallet/WalletService.php). The wallet service provides methods for creating wallets, depositing and withdrawing funds, checking balances, and transferring funds between wallets.
 
 ### Concept: Ledgers
 A Ledger holds an array of accounts, actions and amounts. It is used to track the movement of funds between accounts. The Ledger class is defined in [app/Wallet/Ledger.php](app/Wallet/Ledger.php).
