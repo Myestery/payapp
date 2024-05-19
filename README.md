@@ -110,7 +110,14 @@ https://payappp-a90e537ad231.herokuapp.com/
 
 ## Testing
 
-1. **Run the test suite:**
+Testing Can be done on this repo using github actions or pulling and running the tests
+1. **Using Github Actions:**
+    - Fork the repository
+    - Navigate to the Actions tab
+    - Click on the latest workflow run
+    - Click on the `Run Tests` job to view the test output
+
+2. **Run the test suite:**
     ```sh
     php artisan test
     ```
