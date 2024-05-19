@@ -82,11 +82,6 @@ class AccountController extends Controller
             'bank_code' => 'required|string',
         ]);
 
-        $account = $request->user()->account;
-        if ($account->balance < $request->amount) {
-            throw new LowBalanceException("Insufficient balance");
-        }
-
         WithdrawAction::fromRequest($request->user()->account, $request)->execute();
 
         return $this->respondWithData([], 'Withdrawal request successful');

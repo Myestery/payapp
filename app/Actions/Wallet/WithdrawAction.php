@@ -12,10 +12,11 @@ use App\Payments\PaymentActions;
 use Illuminate\Support\Facades\DB;
 use App\Payments\PaymentGatewaySwitch;
 use App\Exceptions\LowBalanceException;
-
+use App\Traits\ApiResponse;
 
 class WithdrawAction
 {
+    use ApiResponse;
     /**
      * CreateSubaccountAction constructor.
      * @param PaymentGatewaySwitch $paymentGatewaySwitch
@@ -41,9 +42,19 @@ class WithdrawAction
     public function execute()
     {
 
+
         /** @var \App\Payments\PaymentGatewaySwitch  */
         $switch = app()->make(\App\Payments\PaymentGatewaySwitch::class);
         //    make sure the account exists
+
+        $ref = Str::uuid();
+        $account = $this->account;
+        $amount = $this->amount;
+
+        if ($account->balance < $amount) {
+            throw new LowBalanceException("Insufficient balance");
+        }
+
         $wdlProvider = $switch->get(PaymentActions::CREATE_WITHDRAWAL);
         $resolver = $switch->get(PaymentActions::RESOLVE_BANK_ACCOUNT);
         try {
@@ -51,11 +62,6 @@ class WithdrawAction
         } catch (\Throwable $th) {
             return $this->respondWithError("Could not resolve Account details", 400);
         }
-        $ref = Str::uuid();
-        $account = $this->account;
-        $amount = $this->amount;
-
-
         $exception = DB::transaction(function () use ($account, $amount, $wdlProvider, $bank, $ref) {
 
             // create a ledger and apply debit

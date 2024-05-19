@@ -10,9 +10,6 @@ use App\Wallet\WalletService;
 use Illuminate\Support\Facades\DB;
 use App\Exceptions\LowBalanceException;
 
-
-
-
 class TransferAction
 {
     /**

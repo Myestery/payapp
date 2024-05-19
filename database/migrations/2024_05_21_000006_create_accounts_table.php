@@ -16,7 +16,7 @@ return new class extends Migration {
         Schema::create('accounts', function (Blueprint $table) {
             $table->id();
             $table->string('name')->nullable();
-            $table->unsignedbigInteger('user_id')->unique()->nullable();
+            $table->unsignedbigInteger('user_id')->nullable();
             $table->decimal('balance', 20, 2)->default(0.00);
             $table->string('account_type')->default(WalletConst::REGULAR);
             $table->decimal('transaction_limit', 20, 2)->default(1_000_000);
