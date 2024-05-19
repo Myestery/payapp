@@ -1,6 +1,11 @@
 name: Run Feature Tests
 
 on:
+  # push and workflow dispatch
+  push:
+    branches:
+      - main
+      - develop
   workflow_dispatch:
 
 jobs:
