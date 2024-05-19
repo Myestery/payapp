@@ -2,18 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\LowBalanceException;
-use App\Exceptions\TransferFailedException;
 use App\Models\User;
 use App\Models\Account;
 use App\Wallet\WalletConst;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Payments\PaymentData;
+use App\Actions\Wallet\TransferAction;
+use App\Actions\Wallet\WithdrawAction;
 use App\Payments\PaymentActions;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use App\Payments\PaymentGatewaySwitch;
+use App\Exceptions\LowBalanceException;
 use App\Payments\PaymentGatewayProvider;
+use App\Exceptions\TransferFailedException;
 
 class AccountController extends Controller
 {
@@ -71,7 +74,7 @@ class AccountController extends Controller
         }
     }
 
-    public function withdraw(Request $request, PaymentGatewaySwitch $switch): \Illuminate\Http\JsonResponse
+    public function withdraw(Request $request): \Illuminate\Http\JsonResponse
     {
         $request->validate([
             'amount' => 'required|numeric|min:100',
@@ -83,77 +86,8 @@ class AccountController extends Controller
         if ($account->balance < $request->amount) {
             throw new LowBalanceException("Insufficient balance");
         }
-        //    make sure the account exists
-        $wdlProvider = $switch->get(PaymentActions::CREATE_WITHDRAWAL);
-        $resolver = $switch->get(PaymentActions::RESOLVE_BANK_ACCOUNT);
-        try {
-            $bank = $resolver->resolveBankAccount($request->account_number, $request->bank_code);
-        } catch (\Throwable $th) {
-            return $this->respondWithError("Could not resolve Account details", 400);
-        }
-        $ref = Str::uuid();
 
-
-        $exception = DB::transaction(function () use ($account, $request, $wdlProvider, $bank, $ref) {
-
-            // create a ledger and apply debit
-            /** @var \App\Wallet\WalletService */
-            $walletService = app()->make(\App\Wallet\WalletService::class);
-
-            $gl = $wdlProvider->getGL();
-            // $txReference = $transferResponse["data"]["nip_transaction_reference"];
-
-            $ledgers = [
-                new \App\Wallet\Ledger(
-                    action: WalletConst::DEBIT,
-                    account_id: $account->id,
-                    amount: $request->amount,
-                    narration: "PAYOUT/" . $ref,
-                    category: "PAYOUT",
-                ),
-                new \App\Wallet\Ledger(
-                    action: WalletConst::CREDIT,
-                    account_id: $gl->id,
-                    amount: $request->amount,
-                    narration: "PAYOUT/" . $ref,
-                    category: "PAYOUT",
-                ),
-            ];
-
-            $res = $walletService->post(
-                reference: $ref,
-                total_amount: $request->amount,
-                ledgers: $ledgers,
-                provider: $wdlProvider->getId(),
-            );
-
-            if (!$res->isSuccessful()) {
-                throw new \Exception("An error occurred while processing your request, please try again later");
-            }
-
-            \App\Models\Withdrawal::create([
-                'account_id' => $account->id,
-                'bank_name' => $bank->bankName,
-                'account_name' => $bank->accountName,
-                'account_number' => $bank->accountNumber,
-                'bank_code' => $bank->bankCode,
-                'amount' => $request->amount,
-                'provider' => $wdlProvider->getId(),
-                'status' => "pending",
-                'reference' => "PAYOUT/" . $ref,
-                'session_id' => null,
-                'wallet_debited' => true,
-                'value_given' => false,
-                'response_code' => null,
-                'response_message' => null,
-            ]);
-        });
-
-        if ($exception) {
-            throw new \Exception(
-                "An error occurred while processing your request, please try again later"
-            );
-        }
+        WithdrawAction::fromRequest($request->user()->account, $request)->execute();
 
         return $this->respondWithData([], 'Withdrawal request successful');
     }
@@ -187,60 +121,9 @@ class AccountController extends Controller
             'amount' => 'required|numeric|min:100',
             'email' => 'required|exists:users,email',
         ]);
-
         $account = $request->user()->account;
-        if ($account->balance < $request->amount) {
-            throw new LowBalanceException("Insufficient balance");
-        }
-        $recAccount = User::where('email', $request->email)->first()->account;
-        if (!$recAccount) {
-            return $this->respondWithError("Recipient account not found", 400);
-        }
 
-        $ref = Str::uuid();
-        $exception = DB::transaction(function () use ($account, $request, $ref, $recAccount) {
-            // create a ledger and apply debit
-            /** @var \App\Wallet\WalletService */
-            $walletService = app()->make(\App\Wallet\WalletService::class);
-
-            $ledgers = [
-                new \App\Wallet\Ledger(
-                    action: WalletConst::DEBIT,
-                    account_id: $account->id,
-                    amount: $request->amount,
-                    narration: "TRANSFER/" . $ref,
-                    category: "TRANSFER",
-                ),
-                new \App\Wallet\Ledger(
-                    action: WalletConst::CREDIT,
-                    account_id: $recAccount->id,
-                    amount: $request->amount,
-                    narration: "TRANSFER/" . $ref,
-                    category: "TRANSFER",
-                ),
-            ];
-
-            $res = $walletService->post(
-                reference: $ref,
-                total_amount: $request->amount,
-                ledgers: $ledgers,
-                provider: "internal",
-            );
-
-            if (!$res->isSuccessful()) {
-                throw new \Exception("An error occurred while processing your request, please try again later");
-            }
-
-            if (!$res->isSuccessful()) {
-                throw new \Exception("An error occurred while processing your request, please try again later");
-            }
-        });
-
-        if ($exception) {
-            throw new \Exception(
-                "An error occurred while processing your request, please try again later"
-            );
-        }
+        TransferAction::fromRequest($account, $request)->execute();
 
         return $this->respondWithData([], 'Transfer successful');
     }

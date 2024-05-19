@@ -28,6 +28,7 @@ class CreateAccountAction
 
         $result = $paymentGateway->createVirtualAccount(
             user: $user,
+            account: $user->account,
         );
 
         return $result;

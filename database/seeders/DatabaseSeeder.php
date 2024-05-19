@@ -46,5 +46,16 @@ class DatabaseSeeder extends Seeder
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        DB::table('accounts')->insert([
+            'balance' => 0.00,
+            'name' => 'FEES GL',
+            'transaction_limit' => 1_000_000_000_000_000,
+            'currency' => 'NGN',
+            'account_type' => WalletConst::GL,
+            'email_subscribe' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }

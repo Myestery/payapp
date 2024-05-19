@@ -13,4 +13,6 @@ interface WalletConst
     const FAILED = 0;
 
     const GL_ACCOUNT = 'GL';
+
+    const TRANSFER_FEE = 5;
 }

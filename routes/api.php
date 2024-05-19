@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
+use App\Http\Middleware\HasAccount;
 use Illuminate\Support\Facades\Log;
 use App\Http\Middleware\RequiresOTP;
 use Illuminate\Support\Facades\Route;
@@ -27,14 +28,17 @@ Route::group(['middleware' => SanctumLoggedIn::class], function () {
     // ACCOUNT ROUTES
     Route::post('/account', [AccountController::class, 'create']);
     Route::get('/account', [AccountController::class, 'index']);
-    Route::post('/account/deposit', [AccountController::class, 'deposit']);
+    Route::post('/account/deposit', [AccountController::class, 'deposit'])
+        ->middleware(HasAccount::class);
     Route::post('/account/withdraw', [AccountController::class, 'withdraw'])
+        ->middleware(HasAccount::class)
         ->middleware(TransactionLimitChecker::class)
         ->middleware(RequiresOTP::class);
     Route::post('/account/transfer', [AccountController::class, 'transfer'])
-        ->middleware(TransactionLimitChecker::class)
-        ->middleware(RequiresOTP::class);
-    Route::get('/account/history', [AccountController::class, 'history']);
+        ->middleware(HasAccount::class)
+        ->middleware(TransactionLimitChecker::class);
+        // ->middleware(RequiresOTP::class);
+    Route::get('/account/history', [AccountController::class, 'history'])->middleware(HasAccount::class);
 
     Route::get('otp', [AuthController::class, 'otp']);
 
