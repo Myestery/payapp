@@ -75,9 +75,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
     /**
      * Get the virtual accounts for the user.
      */
-    public function virtualAccounts()
+    public function account()
     {
-        return $this->hasMany(VirtualAccount::class);
+        return $this->hasOne(Account::class);
     }
 
     public function getNameAttribute(): string

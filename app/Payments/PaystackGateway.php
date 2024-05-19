@@ -41,7 +41,7 @@ class PaystackGateway implements PaymentGateway
         return Account::where('name', 'PAYSTACK GL')->first();
     }
 
-    public function initiatePayment(User $user, PaymentData $paymentData): InitiatePaymentResult
+    public function initiatePayment(PaymentData $paymentData): InitiatePaymentResult
     {
         $data = [
             "first_name" => $paymentData->customerName,

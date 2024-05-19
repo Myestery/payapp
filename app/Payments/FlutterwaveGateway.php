@@ -33,7 +33,7 @@ class FlutterwaveGateway implements PaymentGateway
      * @param PaymentData $paymentData
      * @return InitiatePaymentResult
      */
-    public function initiatePayment(User $user, PaymentData $paymentData): InitiatePaymentResult
+    public function initiatePayment(PaymentData $paymentData): InitiatePaymentResult
     {
         $arr = [
             'tx_ref' => $paymentData->referenceCode,
@@ -46,9 +46,9 @@ class FlutterwaveGateway implements PaymentGateway
                 'phonenumber' => $paymentData->customerPhone ?? "",
             ],
             'customizations' => [
-                'title' => 'Vendors.so',
-                'description' => 'Vendors.so',
-                'logo' => 'https://vendors.so/img/logo.svg',
+                'title' => 'Payment App',
+                'description' => 'One time payment for a service',
+                'logo' => 'https://camo.githubusercontent.com/043cf668c8a293c0d461d2a118dec5920a69d2811bc0e91068e8299712ce8f48/68747470733a2f2f7777772e7061792e6e6c2f68756266732f32353735383235302f696d616765732f5061792532304c6f676f2532302d2532305247425f5072696d6172792532304c6f676f2e706e673f743d31363538313439393330333330',
             ],
             'meta' => $paymentData->meta ?? null,
         ];
@@ -56,7 +56,6 @@ class FlutterwaveGateway implements PaymentGateway
         // dd($arr);
 
         $response = Http::withToken(config('services.flutterwave.secret'))
-            ->withOptions(['debug' => config('app.debug')])
             ->acceptJson()
             ->post(config('services.flutterwave.url') . '/payments', $arr);
 

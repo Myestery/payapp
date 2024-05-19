@@ -12,7 +12,7 @@ interface PaymentGateway
 {
     public function getId(): string;
 
-    public function initiatePayment(User $user, PaymentData $paymentData): InitiatePaymentResult;
+    public function initiatePayment(PaymentData $paymentData): InitiatePaymentResult;
 
     public function getTransactionData(string $paymentReference): TransactionData;
 
