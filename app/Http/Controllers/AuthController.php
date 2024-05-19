@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Mail\OTPMail;
 use Illuminate\Http\Request;
 use App\Http\Requests\LoginRequest;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use App\Http\Requests\RegisterRequest;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Session;
@@ -67,5 +69,14 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Logged out'
         ]);
+    }
+
+    public function otp(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $otp = rand(1000, 9999);
+        // save otp in cache
+        cache([$request->user()->id . ':otp' => $otp], now()->addMinutes(5));
+        Mail::to($request->user())->send(new OTPMail($otp));
+        return $this->respondWithData([], 'OTP sent to your email');
     }
 }

@@ -9,7 +9,7 @@ use App\Http\Middleware\SanctumLoggedIn;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Middleware\FlutterwaveWebhook;
-
+use App\Http\Middleware\RequiresOTP;
 
 // AUTH ROUTES
 Route::post('/register', [AuthController::class, 'register']);
@@ -28,8 +28,12 @@ Route::group(['middleware' => SanctumLoggedIn::class], function () {
     Route::get('/account', [AccountController::class, 'index']);
     Route::post('/account/deposit', [AccountController::class, 'deposit']);
     Route::post('/account/withdraw', [AccountController::class, 'withdraw']);
+    // ->middleware(RequiresOTP::class);
     Route::post('/account/transfer', [AccountController::class, 'transfer']);
+    // ->middleware(RequiresOTP::class);
     Route::get('/account/history', [AccountController::class, 'history']);
+
+    Route::get('otp', [AuthController::class, 'otp']);
 
     // BANK ACCOUNT ROUTES
     Route::get('/bank', [AccountController::class, 'getBanks']);

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\LowBalanceException;
+use App\Exceptions\TransferFailedException;
 use App\Models\User;
 use App\Models\Account;
 use App\Wallet\WalletConst;
@@ -79,7 +81,7 @@ class AccountController extends Controller
 
         $account = $request->user()->account;
         if ($account->balance < $request->amount) {
-            return $this->respondWithError("Insufficient balance", 400);
+            throw new LowBalanceException("Insufficient balance");
         }
         //    make sure the account exists
         $wdlProvider = $switch->get(PaymentActions::CREATE_WITHDRAWAL);
@@ -188,7 +190,7 @@ class AccountController extends Controller
 
         $account = $request->user()->account;
         if ($account->balance < $request->amount) {
-            return $this->respondWithError("Insufficient balance", 400);
+            throw new LowBalanceException("Insufficient balance");
         }
         $recAccount = User::where('email', $request->email)->first()->account;
         if (!$recAccount) {
