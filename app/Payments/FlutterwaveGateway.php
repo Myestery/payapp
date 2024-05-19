@@ -109,11 +109,6 @@ class FlutterwaveGateway implements PaymentGateway
         };
     }
 
-    public function getSettlementData(string $paymentReference): TransactionSettlementData
-    {
-        throw new Exception('getSettlementData not implemented for Flutterwave');
-    }
-
     public function getId(): string
     {
         return self::ID;
@@ -220,6 +215,41 @@ class FlutterwaveGateway implements PaymentGateway
                 successful: false,
             );
         }
+    }
+
+    public function getBanks(): array
+    {
+       $secret = config('services.flutterwave.secret');
+         $response = Http::withToken($secret)
+                ->get(config('services.flutterwave.url') . '/banks/NG');
+
+          if ($response->failed()) {
+                throw new Exception('Flutterwave error: ' . $response->body());
+          }
+
+          return $response->json('data');
+    }
+
+    public function resolveBankAccount(string $accountNumber, string $bankCode): BankAccount
+    {
+        $secret = config('services.flutterwave.secret');
+        $response = Http::withToken($secret)
+            ->get(config('services.flutterwave.url') . '/accounts/resolve', [
+                'account_number' => $accountNumber,
+                'bank_code' => $bankCode,
+            ]);
+
+        if ($response->failed()) {
+            throw new Exception('Flutterwave error: ' . $response->body());
+        }
+
+        $data = $response->json('data');
+        return new BankAccount(
+            accountNumber: $data['account_number'],
+            bankCode: $data['bank_code'],
+            accountName: $data['account_name'],
+            bankName: $data['bank_name'],
+        );
     }
 
 }

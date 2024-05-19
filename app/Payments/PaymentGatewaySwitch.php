@@ -18,6 +18,8 @@ class PaymentGatewaySwitch
         return match($action) {
             PaymentActions::CREATE_VIRTUAL_ACCOUNT => $this->getPaystack(),
             PaymentActions::GET_CARD_PAYMENT_LINK => $this->getFlutterwave(),
+            PaymentActions::GET_BANKS => $this->getPaystack(),
+            PaymentActions::RESOLVE_BANK_ACCOUNT => $this->getPaystack(),
             default => throw new \Exception($action . ' action not supported.')
         };
     }

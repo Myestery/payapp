@@ -3,9 +3,10 @@
 
 namespace App\Payments;
 
-use App\Models\Account;
 use Exception;
 use App\Models\User;
+use App\Models\Account;
+use App\Payments\BankAccount;
 use App\Payments\PaymentData;
 
 interface PaymentGateway
@@ -16,7 +17,11 @@ interface PaymentGateway
 
     public function getTransactionData(string $paymentReference): TransactionData;
 
-    public function getSettlementData(string $paymentReference): TransactionSettlementData;
+    public function getBanks(): array;
+
+    public function resolveBankAccount(string $accountNumber, string $bankCode): BankAccount;
+
+    public function getGL(): Account;
 
     public function processWebhook(WebhookResource $webhookResource): WebhookResult;
 

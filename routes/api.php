@@ -27,6 +27,11 @@ Route::group(['middleware' => SanctumLoggedIn::class], function () {
     Route::post('/account', [AccountController::class, 'create']);
     Route::get('/account', [AccountController::class, 'index']);
     Route::post('/account/deposit', [AccountController::class, 'deposit']);
+    Route::post('/account/withdraw', [AccountController::class, 'withdraw']);
+
+    // BANK ACCOUNT ROUTES
+    Route::get('/bank', [AccountController::class, 'getBanks']);
+    Route::post('/bank/resolve', [AccountController::class, 'resolveBankAccount']);
 });
 
 // WEBHOOK ROUTES

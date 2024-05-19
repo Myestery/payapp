@@ -65,4 +65,53 @@ class AccountController extends Controller
                 return $this->respondWithError('Invalid channel', 400);
         }
     }
+
+    public function withdraw(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:1000',
+            'account_number' => 'required|string',
+            'bank_code' => 'required|string',
+        ]);
+
+        $account = $request->user()->account;
+        $provider = PaymentGatewayProvider::getProvider($account->currency);
+        $link = $provider->initiatePayment(
+            new PaymentData(
+                customerName: $account->name,
+                currency: "NGN",
+                customerEmail: $request->user()->email,
+                referenceCode: Str::uuid(),
+                redirectUrl: "https://google.com",
+                totalAmount: $request->amount,
+                customerPhone: $request->user()->phone,
+                paymentDescription: 'Withdraw from account',
+                method: 'bank-transfer'
+            )
+        );
+        return $this->respondWithData($link, 'Withdrawal initiated');
+    }
+
+    public function getBanks(PaymentGatewaySwitch $switch): \Illuminate\Http\JsonResponse
+    {
+        $provider = $switch->get(PaymentActions::GET_BANKS);
+        $banks = $provider->getBanks();
+        return $this->respondWithData($banks, 'Banks retrieved successfully');
+    }
+
+    public function resolveBankAccount(Request $request, PaymentGatewaySwitch $switch): \Illuminate\Http\JsonResponse
+    {
+        $request->validate([
+            'account_number' => 'required|string',
+            'bank_code' => 'required|string',
+        ]);
+
+        $provider = $switch->get(PaymentActions::RESOLVE_BANK_ACCOUNT);
+        try {
+            $bank = $provider->resolveBankAccount($request->account_number, $request->bank_code);
+        } catch (\Throwable $th) {
+            return $this->respondWithError("Could not resolve Account details", 400);
+        }
+        return $this->respondWithData($bank, 'Bank resolved successfully');
+    }
 }

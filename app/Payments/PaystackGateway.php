@@ -108,11 +108,6 @@ class PaystackGateway implements PaymentGateway
         return self::ID;
     }
 
-    public function getSettlementData(string $paymentReference): TransactionSettlementData
-    {
-        throw new \Exception('Not yet implemented');
-    }
-
     public function createVirtualAccount(User $user, Account $account): VirtualAccountCreationResult
     {
         // create a customer
@@ -280,6 +275,40 @@ class PaystackGateway implements PaymentGateway
                 successful: false,
             );
         }
+    }
+
+    public function getBanks(): array
+    {
+        $response = Http::withToken(config('paystack.secretKey'))
+            ->get('https://api.paystack.co/bank');
+
+        $banks = $response->json()['data'];
+
+        return collect($banks)->map(function ($bank) {
+            return [
+                'code' => $bank['code'],
+                'name' => $bank['name'],
+            ];
+        })->toArray();
+    }
+
+    public function resolveBankAccount(string $accountNumber, string $bankCode): BankAccount
+    {
+        $response = Http::withToken(config('paystack.secretKey'))
+            ->get('https://api.paystack.co/bank/resolve', [
+                'account_number' => $accountNumber,
+                'bank_code' => $bankCode,
+            ]);
+
+        $data = $response->json()['data'];
+        $banks = $this->getBanks();
+
+        return new BankAccount(
+            accountName: $data['account_name'],
+            accountNumber: $data['account_number'],
+            bankName: collect($banks)->firstWhere('code', $bankCode)['name'],
+            bankCode: $bankCode,
+        );
     }
 
 
