@@ -28,7 +28,7 @@ class WalletServiceTest extends TestCase
     public function test_wallet_can_not_post_transaction_with_existing_reference()
     {
         $txn = new WalletTransaction;
-        $txn->reference = substr(md5(microtime()), rand(0, 26), 5);
+        $txn->reference = "1234567890";
         $txn->status = WalletConst::SUCCESSFUL;
         $txn->total_debit = 1000.00;
         $txn->total_sent = 1000.00;

@@ -24,6 +24,14 @@ class WalletActionsTest extends TestCase
         $account = Account::factory()->create([
             'balance' => 1000
         ]);
+        // ensure first user has an account too
+        Account::where(["user_id" => 1])->delete();
+        Account::factory()->create([
+            'balance' => 1000,
+            'user_id' => 1
+        ]);
+
+
         TransferAction::fromRequest(
             account: $account,
             request: (object) ['amount' => 100, 'email' => User::first()->email]

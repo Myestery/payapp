@@ -9,9 +9,11 @@ use Illuminate\Support\Str;
 use App\Wallet\WalletService;
 use Illuminate\Support\Facades\DB;
 use App\Exceptions\LowBalanceException;
+use App\Traits\ApiResponse;
 
 class TransferAction
 {
+    use ApiResponse;
     /**
      * CreateSubaccountAction constructor.
      * @param PaymentGatewaySwitch $paymentGatewaySwitch
