@@ -26,6 +26,10 @@ jobs:
         touch database/database.sqlite
     - name: Migrate sqlite DB
       run: php artisan migrate:fresh --seed
-    - name: Migrate sqlite DB
-      run: php artisan test
+    - name: Run Feature Tests
+      run: |
+        # use correct directory
+        pwd
+        # run tests
+        php artisan test --testsuite=Feature
 
